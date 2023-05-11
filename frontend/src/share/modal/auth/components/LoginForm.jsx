@@ -1,5 +1,6 @@
 import { Box, Link, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
+import Axios from '../../../AxiosInstance';
 
 const LoginForm = ({ handleClose = () => {}, setIsLogin = () => {}, setStatus = () => {}, setUser = () => {} }) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -7,12 +8,60 @@ const LoginForm = ({ handleClose = () => {}, setIsLogin = () => {}, setStatus = 
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  const validateForm = () => {
+    let isValid = true;
+    if (!usernameOrEmail) {
+      setUsernameOrEmailError('Username or email is required');
+      isValid = false;
+    }
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    }
+    return isValid;
+  };
   const handleSubmit = async () => {
     // TODO: Implement login
     // 1. validate form
-    // 2. call API to login
-    // 3. if success, close modal, and update user information.
-    // 4. if fail, show error message, and reset text fields value
+    if (!validateForm()) return;
+    try {
+      // 2. call API to login
+      const response = await Axios.post('/login', {
+        usernameOrEmail,
+        password,
+      });
+      // 3. if success, close modal, and update user information.
+      if (response.data.success) {
+        setUser({
+          username: response.data.data.username,
+          email: response.data.data.email,
+        });
+        handleClose();
+        setStatus({
+          msg: response.data.msg,
+          severity: 'success',
+        });
+      }
+    } catch (e) {
+      // 4. if fail, show error message, and reset text fields value
+      setUsernameOrEmail('');
+      setPassword('');
+      // check if e are AxiosError
+      if (e instanceof AxiosError) {
+        // check if e.response exist
+        if (e.response)
+          return setStatus({
+            msg: e.response.data.error,
+            severity: 'error',
+          });
+      }
+      // if e is not AxiosError or response doesn't exist, return error
+      message;
+      return setStatus({
+        msg: e.message,
+        severity: 'error',
+      });
+    }
   };
   return (
     <Box

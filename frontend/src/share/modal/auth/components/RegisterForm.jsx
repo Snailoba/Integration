@@ -1,5 +1,6 @@
 import { Box, Link, TextField, Typography } from '@mui/material';
 import React, { useContext, useState } from 'react';
+import Axios from '../../../AxiosInstance';
 
 const RegisterForm = ({ setIsLogin = () => {}, setStatus = () => {} }) => {
   const [username, setUsername] = useState('');
@@ -46,9 +47,41 @@ const RegisterForm = ({ setIsLogin = () => {}, setStatus = () => {} }) => {
   const handleSubmit = async () => {
     // TODO: Implement login
     // 1. validate form
-    // 2. send request to server
-    // 3. if successful, change modal to login mode
-    // 4. if fail, show error message alert, and reset password fields
+    if (!validateForm()) return;
+    try {
+      // 2. send request to server
+      const response = await Axios.post('/register', {
+        username,
+        email,
+        password,
+      });
+      // 3. if successful, change modal to login mode
+      if (response.data.success) {
+        setIsLogin(true);
+        setStatus({
+          msg: response.data.msg,
+          severity: 'success',
+        });
+      }
+    } catch (e) {
+      // 4. if fail, show error message alert, and reset password fields
+      setPassword('');
+      setRePassword('');
+      // check if e are AxiosError
+      if (e instanceof AxiosError)
+        if (e.response)
+          // check if e.response exist
+          return setStatus({
+            msg: e.response.data.error,
+            severity: 'error',
+          });
+      // if e is not AxiosError or response doesn't exist, return error
+      message;
+      return setStatus({
+        msg: e.message,
+        severity: 'error',
+      });
+    }
   };
   return (
     <Box
